@@ -18,6 +18,9 @@ $success = mysqli_real_connect(
 );
 */
 
+// this code will be comment out after creating.
+ini_set('display_errors', 'On');
+
 $link = mysql_connect('localhost', 'root', 'root');
 
 if (!$link) {
