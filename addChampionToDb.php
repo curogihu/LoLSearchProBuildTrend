@@ -13,54 +13,56 @@ $password = 'root';
 try{
     $dbh = new PDO($dsn, $user, $password);
 
-}catch (PDOException $e){
-    print('Error:'.$e->getMessage());
+}catch(PDOException $e){
+    print('Connect Error: '.$e->getMessage());
     die();
 }
 
 date_default_timezone_set("Asia/Tokyo");
 
-$id = 0;
+//$championId = 0;
 
 $baseUrl = "http://www.probuilds.net/champions";
 $pageData = mb_convert_encoding(file_get_contents($baseUrl),'UTF-8','auto');
 $html = str_get_html($pageData);
 
 /*
+// check whether I could get html object.
 echo "<pre>";
 echo var_dump($html);
 echo "</pre>";
 */
 
-foreach($html->find('li[class=left tooltip]') as $championRecord){
+$target = $html->find('ul[class=search-results-results champion-results]')[0];
+$cnt = 0;
 
-  //$realName = $championRecord->find('h3[class=mb5 gold]').innerText;
-  //$type = $championRecord->find('p[class=mb5 white]').innerText;
+foreach($target->find('li[class=left tooltip]') as $championRecord){
+  $championName = $championRecord->find('h3')[0]->plaintext;
+  $championUrl = $championRecord->find('a')[0]->href;
+  $championType = $championRecord->find('p')[0]->plaintext;
 
-//  echo $championRecord;
-  $realName = $championRecord->find('h3')[0];
-  $type = $championRecord->find('li[class=left tooltip]')
+  try{
+    $stmt = $dbh->prepare("INSERT INTO LoLChampion (championName, championUrl, championType) VALUES (?, ?, ?)");
+    
+    $stmt->bindParam(1, $championName);
+    $stmt->bindParam(2, $championUrl);
+    $stmt->bindParam(3, $championType);
 
+    $stmt->execute();
 
-//  echo "realName = " . $urlName;
-//  echo "type = " . $urlName;
-/*
-  $stmt = $dbh->prepare("INSERT INTO LoLChampion (id, realName, urlName, type) VALUES (?, ?, ?, ?)");
-  $stmt->bindParam(1, $id);
-  $stmt->bindParam(2, $urlName);
-  $stmt->bindParam(3, $realName);
-  $stmt->bindParam(4, $type);
+    $cnt++;
 
-  $stmt->execute();
-*/
-  echo "insert ok<br>";
+  }catch(PDOException $e){
+    print('Insert Error: '.$e->getMessage());
+  }
 
-  $id++;
+  
+
+  //echo "insert ok<br>";
+
+//  $championId++;
 }
 
-echo "finished";
+echo "finished, insert cnt: " . $cnt;
 
-//<div class='block alt'>
-//foreach($html->find('div[class=property  js-property js-cassetLink]') as $house){
-
-//echo ($cnt);
+die();
