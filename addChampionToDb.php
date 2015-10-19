@@ -27,6 +27,11 @@ echo "<pre>";
 echo var_dump($html);
 echo "</pre>";
 */
+
+// initilize table
+$stmt = $dbh->prepare("DELETE FROM LoLChampion");
+$stmt->execute();
+
 $target = $html->find('ul[class=search-results-results champion-results]')[0];
 $championId = 0;
 
@@ -34,6 +39,7 @@ foreach($target->find('li[class=left tooltip]') as $championRecord){
   $championName = $championRecord->find('h3')[0]->plaintext;
   $championUrl = $championRecord->find('a')[0]->href;
   $championType = $championRecord->find('p')[0]->plaintext;
+
   try{
     $stmt = $dbh->prepare("INSERT INTO LoLChampion (championId, championName, championUrl, championType) VALUES (?, ?, ?, ?)");
 
@@ -49,8 +55,6 @@ foreach($target->find('li[class=left tooltip]') as $championRecord){
     print('Insert Error: '.$e->getMessage());
   }
 
-  //echo "insert ok<br>";
-//  $championId++;
 }
 echo "finished, insert cnt: " . $championId;
 die();
