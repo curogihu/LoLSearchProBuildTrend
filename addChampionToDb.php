@@ -1,15 +1,17 @@
 <?php
 include_once('IXR_Library.php');
 require_once 'simplehtmldom/simple_html_dom.php';
-// this code will be comment out after creating.
 
+// this code will be comment out after creating.
 ini_set('display_errors', 'On');
+
 $dsn = 'mysql:dbname=LoLItemHistory;host=localhost';
 $user = 'root';
 $password = 'root';
 
 try{
     $dbh = new PDO($dsn, $user, $password);
+
 }catch(PDOException $e){
     print('Connect Error: '.$e->getMessage());
     die();
