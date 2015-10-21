@@ -19,7 +19,7 @@ try{
 date_default_timezone_set("Asia/Tokyo");
 
 try{
-  $results = $dbh->query('SELECT * FROM LoLChampion WHERE championId BETWEEN 0 AND 2 ORDER BY championId');
+  $results = $dbh->query('SELECT * FROM LoLChampion WHERE championId ORDER BY championId');
   $championDataArr = $results->fetchAll(PDO::FETCH_ASSOC);
 
 }catch(Exception $e){
@@ -30,6 +30,7 @@ try{
 //inctioのライブラリ呼び出し
 include_once('IXR_Library.php');
 require_once 'simplehtmldom/simple_html_dom.php';
+
 $stmt = $dbh->prepare("DELETE FROM LoLItem");
 $stmt->execute();
 
@@ -49,19 +50,33 @@ foreach($championDataArr as $championData){
     $itemRecord = 0;
 
     foreach($buildRecord->find('img') as $item){
-      $itemFlg = strpos($item->src, "http://www.probuilds.net/resources/img/items/");
-      $emptyFlg = strpos($item->src, "EmptyIcon.png");
+      $targetImagePath = $item->src;
+
+      $itemFlg = strpos($targetImagePath, "http://www.probuilds.net/resources/img/items/");
+      $emptyFlg = strpos($targetImagePath, "EmptyIcon.png");
 
       if($itemFlg !== false && $emptyFlg === false){
+        $finalSlashIndex = mb_strrpos($targetImagePath, "/");
+        $finalDotIndex = mb_strrpos($targetImagePath, ".");
+        $itemId = substr($targetImagePath, $finalSlashIndex + 1, $finalDotIndex - $finalSlashIndex - 1);
+
         // Without conversing single quotation, couldn't insert record.
         $itemName = str_replace("'", "\'", $item->alt);
-        $stmt = $dbh->prepare("INSERT INTO LoLItem (id, championId, record, item, name) VALUES (?, ?, ?, ?, ?)");
+
+        $stmt = $dbh->prepare("INSERT INTO LoLItem (id, championId, record, item, itemId, name) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->bindParam(1, $id);
         $stmt->bindParam(2, $championId);
         $stmt->bindParam(3, $record);
         $stmt->bindParam(4, $itemRecord);
-        $stmt->bindParam(5, $itemName);
+        $stmt->bindParam(5, $itemId);
+        $stmt->bindParam(6, $itemName);
         $stmt->execute();
+
+/*        
+        echo "finalSlashIndex = " . $finalSlashIndex . "<br>";
+        echo "finalDotIndex = " . $finalDotIndex . "<br>";
+        echo "item id = " . $itemId . "<br><br>";
+*/
         $id++;
         $itemRecord++;
       }
