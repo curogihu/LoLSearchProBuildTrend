@@ -19,7 +19,7 @@ try{
 date_default_timezone_set("Asia/Tokyo");
 
 try{
-  $results = $dbh->query('SELECT * FROM LoLChampion WHERE championId ORDER BY championId');
+  $results = $dbh->query('SELECT * FROM LoLChampion WHERE championId BETWEEN 0 AND 19 ORDER BY championId');
   $championDataArr = $results->fetchAll(PDO::FETCH_ASSOC);
 
 }catch(Exception $e){
@@ -34,7 +34,7 @@ require_once 'simplehtmldom/simple_html_dom.php';
 $stmt = $dbh->prepare("DELETE FROM LoLItem");
 $stmt->execute();
 
-$id = 0;
+//$id = 0;
 
 foreach($championDataArr as $championData){
   $pageData = mb_convert_encoding(file_get_contents($championData["championUrl"]),'UTF-8','auto');
@@ -44,10 +44,10 @@ foreach($championDataArr as $championData){
   //$html = file_get_html('sample.html');
 
   $championId = $championData["championId"];
-  $record = 0;
+  //$record = 0;
 
   foreach($html->find('div[class=block]') as $buildRecord){
-    $itemRecord = 0;
+    //$itemRecord = 0;
 
     foreach($buildRecord->find('img') as $item){
       $targetImagePath = $item->src;
@@ -63,6 +63,21 @@ foreach($championDataArr as $championData){
         // Without conversing single quotation, couldn't insert record.
         $itemName = str_replace("'", "\'", $item->alt);
 
+        try{
+          $stmt = $dbh->prepare("INSERT INTO LoLItem (itemId, itemName) VALUES (?, ?)");
+          $stmt->bindParam(1, $itemId);
+          $stmt->bindParam(2, $itemName);
+          $stmt->execute();
+
+        }catch(PDOException $e){
+          echo $e->getMessage();
+          die();
+
+        }catch(Exception $e2){
+          echo $e->getMessage();
+          die();
+        }
+/*
         $stmt = $dbh->prepare("INSERT INTO LoLItem (id, championId, record, item, itemId, name) VALUES (?, ?, ?, ?, ?, ?)");
         $stmt->bindParam(1, $id);
         $stmt->bindParam(2, $championId);
@@ -71,18 +86,19 @@ foreach($championDataArr as $championData){
         $stmt->bindParam(5, $itemId);
         $stmt->bindParam(6, $itemName);
         $stmt->execute();
+*/
 
 /*        
         echo "finalSlashIndex = " . $finalSlashIndex . "<br>";
         echo "finalDotIndex = " . $finalDotIndex . "<br>";
         echo "item id = " . $itemId . "<br><br>";
 */
-        $id++;
-        $itemRecord++;
+        //$id++;
+        //$itemRecord++;
       }
     }
 
-    $record++;
+    //$record++;
   }
 
   echo "ChampionId: " . $championId . ", Start: " . date("H:i:s") . "<br>";
