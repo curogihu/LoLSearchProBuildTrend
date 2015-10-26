@@ -40,100 +40,61 @@ $number = getParticipantIdFromJavascriptCords($test);
 $aaa = strpos($test, '{"eventType":"ITEM_PURCHASED"');
 $cnt = 0;
 
-//$json = convertStringToJson($test);
-
-//echo $test;
-//echo "number = " . $number;
-
 $firstBranketIndex = strpos($test, "{");
 $lastBranketIndex = strrpos($test, "}");
 
-//echo "first = " . $firstBranketIndex;
-//echo "last = " . $lastBranketIndex;
 $extractStr = mb_substr($test, $firstBranketIndex, $lastBranketIndex - $firstBranketIndex + 1);
 $obj = json_decode($extractStr, true);
 
-//echo var_dump($json);
-
-/*
-foreach($json[0]->frames[0]->events as $tmpArr){
-  echo "cnt = " . $cnt . " , contents = " . var_dump($tmpArr);
-  $cnt++;
-}
-*/
-
-/*
-foreach ($obj as $value) {
-  echo var_dump($obj["frames"][1]);
-}
-*/
-
-//foreach ($obj["frames"][1] as $value) {
-  //echo var_dump($obj["frames"][1]);
-
-  //echo var_dump($obj["frames"][1]["events"][1]);
-  //echo var_dump($obj["frames"][1]["events"][4]);
-//}
 $cnt = 0;
+$insertSql = "INSERT INTO LoLBuildHistory (championId, itemId, elapsedTime) VALUES ";
 
-/*
-foreach ($obj["frames"][3]["events"] as $record) {
-  echo var_dump($record);
-  echo "<br>";
-  $cnt++;
-}
+//echo "before: " . $insertSql . "<br>";
 
-echo ($cnt - 1);
-*/
-foreach ($obj["frames"][14]["events"][0] as $record) {
-  echo var_dump($record);
-  echo "<br>";
-  $cnt++;
-}
+foreach ($obj["frames"] as $record) {
 
-echo ($cnt - 1);
+  if(array_key_exists("events", $record)){
 
+    foreach ($record["events"] as $value) {
 
-/*
-$championId = $championData["championId"];
+      if($value["eventType"] === "ITEM_PURCHASED" &&
+          $value["participantId"] === $number){
+        //echo var_dump($value) . "<br>";
 
+        /*
+        $list[] = array($cnt =>
+                    array("timestamp" => $value["timestamp"],
+                          "itemId" => $value["itemId"]));
+        */
+        $insertSql .= "(" . "1" . ", " . $value["itemId"] . ", " . $value["timestamp"] . "), ";
 
-foreach($html->find('div[class=block]') as $buildRecord){
+        //echo "during: " . $insertSql . "<br>";
 
-
-  foreach($buildRecord->find('img') as $item){
-    $targetImagePath = $item->src;
-
-    $itemFlg = strpos($targetImagePath, "http://www.probuilds.net/resources/img/items/");
-    $emptyFlg = strpos($targetImagePath, "EmptyIcon.png");
-
-    if($itemFlg !== false && $emptyFlg === false){
-      $finalSlashIndex = mb_strrpos($targetImagePath, "/");
-      $finalDotIndex = mb_strrpos($targetImagePath, ".");
-      $itemId = substr($targetImagePath, $finalSlashIndex + 1, $finalDotIndex - $finalSlashIndex - 1);
-
-      // Without conversing single quotation, couldn't insert record.
-      $itemName = str_replace("'", "\'", $item->alt);
-
-      try{
-        $stmt = $dbh->prepare("INSERT INTO LoLItem (itemId, itemName) VALUES (?, ?)");
-        $stmt->bindParam(1, $itemId);
-        $stmt->bindParam(2, $itemName);
-        $stmt->execute();
-
-      }catch(PDOException $e){
-        echo $e->getMessage();
-        die();
-
-      }catch(Exception $e2){
-        echo $e->getMessage();
-        die();
+        $cnt++;
       }
-
     }
   }
 }
-*/
+
+echo "before: " . $insertSql . "<br><br>";
+
+// -2 means an unnesessary space and an unnesesarry comma
+$insertSql = substr($insertSql, 0, strlen($insertSql) - 2);
+echo "after: " . $insertSql;
+
+
+try{
+  $stmt = $dbh->prepare($insertSql);
+  $stmt->execute();
+
+}catch(PDOException $e){
+  print('PDO Error: '.$e->getMessage());
+
+}catch(Exception $e2){
+  print('Unexpected Error: '.$e->getMessage());
+
+}
+
 echo "<br>End: " . date("H:i:s");
 
 // it didn't work when adding private or public
@@ -151,10 +112,5 @@ function getParticipantIdFromJavascriptCords($javascriptContent){
   $paticipantString = strstr($javascriptContent, "window.participantId =");
   $participantId = preg_replace('/[^0-9]/', '', $paticipantString);
 
-  return $participantId;
+  return intval($participantId);
 }
-
-//function convertStringToJson($str){
-//  $firstBranketIndex = strpos($str, "[");
-//  $lastBranketIndex = strrpos($str, "]");
-//}
