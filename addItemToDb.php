@@ -19,7 +19,7 @@ try{
 date_default_timezone_set("Asia/Tokyo");
 
 try{
-  $results = $dbh->query('SELECT * FROM LoLChampion WHERE championId BETWEEN 0 AND 19 ORDER BY championId');
+  $results = $dbh->query('SELECT * FROM LoLChampion WHERE championId ORDER BY championId');
   $championDataArr = $results->fetchAll(PDO::FETCH_ASSOC);
 
 }catch(Exception $e){
@@ -34,8 +34,6 @@ require_once 'simplehtmldom/simple_html_dom.php';
 $stmt = $dbh->prepare("DELETE FROM LoLItem");
 $stmt->execute();
 
-//$id = 0;
-
 foreach($championDataArr as $championData){
   $pageData = mb_convert_encoding(file_get_contents($championData["championUrl"]),'UTF-8','auto');
   $html = str_get_html($pageData);
@@ -44,10 +42,9 @@ foreach($championDataArr as $championData){
   //$html = file_get_html('sample.html');
 
   $championId = $championData["championId"];
-  //$record = 0;
 
   foreach($html->find('div[class=block]') as $buildRecord){
-    //$itemRecord = 0;
+
 
     foreach($buildRecord->find('img') as $item){
       $targetImagePath = $item->src;
@@ -77,31 +74,16 @@ foreach($championDataArr as $championData){
           echo $e->getMessage();
           die();
         }
-/*
-        $stmt = $dbh->prepare("INSERT INTO LoLItem (id, championId, record, item, itemId, name) VALUES (?, ?, ?, ?, ?, ?)");
-        $stmt->bindParam(1, $id);
-        $stmt->bindParam(2, $championId);
-        $stmt->bindParam(3, $record);
-        $stmt->bindParam(4, $itemRecord);
-        $stmt->bindParam(5, $itemId);
-        $stmt->bindParam(6, $itemName);
-        $stmt->execute();
-*/
 
-/*        
-        echo "finalSlashIndex = " . $finalSlashIndex . "<br>";
-        echo "finalDotIndex = " . $finalDotIndex . "<br>";
-        echo "item id = " . $itemId . "<br><br>";
-*/
-        //$id++;
-        //$itemRecord++;
       }
     }
-
-    //$record++;
   }
 
   echo "ChampionId: " . $championId . ", Start: " . date("H:i:s") . "<br>";
 }
-
+//"UPDATE LoLItem SET itemName = replace(itemName, \"\\\\\", \"\")";
+/*
+$stmt = $dbh->prepare("UPDATE LoLItem SET itemName = replace(itemName, \"\\\\\", \"\")");
+$stmt->execute();
+*/
 echo "<br>End: " . date("H:i:s");
