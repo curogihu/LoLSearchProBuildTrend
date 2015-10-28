@@ -1,5 +1,9 @@
 <?php
 
+//inctioのライブラリ呼び出し
+include_once('IXR_Library.php');
+require_once 'simplehtmldom/simple_html_dom.php';
+
 echo "Start: " . date("H:i:s") . "<br><br>";
 
 ini_set('display_errors', 'On');
@@ -18,81 +22,68 @@ try{
 
 date_default_timezone_set("Asia/Tokyo");
 
-try{
-  $results = $dbh->query('SELECT * FROM LoLChampion WHERE championId ORDER BY championId');
-  $championDataArr = $results->fetchAll(PDO::FETCH_ASSOC);
 
-}catch(Exception $e){
-  echo $e->getMessage();
-  die();
-}
+$baseUrl = "http://www.probuilds.net/champions/Garen";
+$pageData = mb_convert_encoding(file_get_contents($baseUrl),'UTF-8','auto');
+$html = str_get_html($pageData);
+$targetBuildList = $html->find('div[id=game-feed]')[0];
 
-//inctioのライブラリ呼び出し
-include_once('IXR_Library.php');
-require_once 'simplehtmldom/simple_html_dom.php';
+foreach ($targetBuildList->find('a') as $targetBuildDetail) {
+  $buildDetailUrl = $targetBuildDetail->href;
 
-// If using local html file
-$html = file_get_html('buildHistory.html');
-$cnt = 0;
+  if ($buildDetailUrl !== "#"){
+    //echo $tmpStr . "<br>";
 
-$test = getBuildHistoryCordsFromPage($html);
-$number = getParticipantIdFromJavascriptCords($test);
-$aaa = strpos($test, '{"eventType":"ITEM_PURCHASED"');
-$cnt = 0;
+    // insert
+    $buildDetailPageData = mb_convert_encoding(file_get_contents($buildDetailUrl),'UTF-8','auto');
+    $buildDetailHtml = str_get_html($buildDetailPageData);
 
-$firstBranketIndex = strpos($test, "{");
-$lastBranketIndex = strrpos($test, "}");
+    // extract JSON inside javascript tag
+    $test = getBuildHistoryCordsFromPage($buildDetailHtml);
+    $number = getParticipantIdFromJavascriptCords($test);
 
-$extractStr = mb_substr($test, $firstBranketIndex, $lastBranketIndex - $firstBranketIndex + 1);
-$obj = json_decode($extractStr, true);
+    $firstBranketIndex = strpos($test, "{");
+    $lastBranketIndex = strrpos($test, "}");
+    $extractStr = mb_substr($test, $firstBranketIndex, $lastBranketIndex - $firstBranketIndex + 1);
+    $obj = json_decode($extractStr, true);
 
-$cnt = 0;
-$insertSql = "INSERT INTO LoLBuildHistory (championId, itemId, elapsedTime) VALUES ";
+    $cnt = 0;
+    $insertSql = "INSERT INTO LoLBuildHistory (championId, itemId, elapsedTime) VALUES ";
 
-//echo "before: " . $insertSql . "<br>";
+    //echo "before: " . $insertSql . "<br>";
 
-foreach ($obj["frames"] as $record) {
+    foreach ($obj["frames"] as $record) {
 
-  if(array_key_exists("events", $record)){
+      if(array_key_exists("events", $record)){
 
-    foreach ($record["events"] as $value) {
+        foreach ($record["events"] as $value) {
 
-      if($value["eventType"] === "ITEM_PURCHASED" &&
-          $value["participantId"] === $number){
-        //echo var_dump($value) . "<br>";
+          if($value["eventType"] === "ITEM_PURCHASED" &&
+              $value["participantId"] === $number){
 
-        /*
-        $list[] = array($cnt =>
-                    array("timestamp" => $value["timestamp"],
-                          "itemId" => $value["itemId"]));
-        */
-        $insertSql .= "(" . "1" . ", " . $value["itemId"] . ", " . $value["timestamp"] . "), ";
-
-        //echo "during: " . $insertSql . "<br>";
-
-        $cnt++;
+            $insertSql .= "(" . "30" . ", " . $value["itemId"] . ", " . $value["timestamp"] . "), ";
+            $cnt++;
+          }
+        }
       }
     }
+
+    // [-2] means an unnesessary space and an unnesesarry comma
+    $insertSql = substr($insertSql, 0, strlen($insertSql) - 2);
+
+    try{
+      $stmt = $dbh->prepare($insertSql);
+      $stmt->execute();
+
+    }catch(PDOException $e){
+      print('PDO Error: '.$e->getMessage());
+
+    }catch(Exception $e2){
+      print('Unexpected Error: '.$e->getMessage());
+
+    }
+
   }
-}
-
-echo "before: " . $insertSql . "<br><br>";
-
-// -2 means an unnesessary space and an unnesesarry comma
-$insertSql = substr($insertSql, 0, strlen($insertSql) - 2);
-echo "after: " . $insertSql;
-
-
-try{
-  $stmt = $dbh->prepare($insertSql);
-  $stmt->execute();
-
-}catch(PDOException $e){
-  print('PDO Error: '.$e->getMessage());
-
-}catch(Exception $e2){
-  print('Unexpected Error: '.$e->getMessage());
-
 }
 
 echo "<br>End: " . date("H:i:s");
