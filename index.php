@@ -1,5 +1,5 @@
 <?php
-//session_start();
+session_start();
 
 ini_set('display_errors', 'On');
 
@@ -41,7 +41,7 @@ try{
   <div id="container">
     <div id="searchForm">
       <form action="result.php" method="post">
-        <select name="targetChampionName" id="targetChampionName">
+        <select name="targetChampionId" id="targetChampionId">
         <?php echo createOptionList($championDataArr); ?>
         </select>
 
@@ -152,6 +152,6 @@ try{
 
 function createOptionList($championArr){
   foreach($championArr as $championData){
-    echo "<option value='" . $championData["championName"] . "'>" . $championData["championName"] . "</option>";
+    echo "<option value='" . $championData["championId"] . "'>" . str_replace("\"", "&#92;", $championData["championName"]) . "</option>";
   }
 }

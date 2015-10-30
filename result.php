@@ -1,5 +1,5 @@
 <?php
-session_start();
+//session_start();
 
 ini_set('display_errors', 'On');
 
@@ -7,14 +7,13 @@ $dsn = 'mysql:dbname=LoLItemHistory;host=localhost';
 $user = 'root';
 $password = 'root';
 
-$_SESSION["targetChampionName"] = $_POST["targetChampionName"];
+$_SESSION["targetChampionId"] = $_POST["targetChampionId"];
 
-
-if(empty($_SESSION["targetChampionName"])){
+if(empty($_SESSION["targetChampionId"])){
   echo "post value = nothing. <br>";
 
 }else{
-  echo "post value = " . $_SESSION["targetChampionName"] . ".<br>";
+  echo "post value = " . $_SESSION["targetChampionId"] . ".<br>";
 
 }
 
@@ -35,8 +34,8 @@ try{
   echo $e->getMessage();
   die();
 }
-
 ?>
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -51,9 +50,9 @@ try{
 
   <div id="container">
     <div id="searchForm">
-      <form action="index.php" method="post">
+      <form action="result.php" method="post">
         <select name="targetChampionId" id="targetChampionId">
-        <?php echo createOptionList($championDataArr, $_SESSION["targetChampionName"]); ?>
+        <?php echo createOptionList($championDataArr, $_SESSION["targetChampionId"]); ?>
         </select>
 
         <input type="submit" value="search">
@@ -161,21 +160,23 @@ try{
 
 <?php
 
-function createOptionList($championArr, $targetChampionName){
-
-  $targetChampionName = str_replace("'", "\'", $targetChampionName);
-
+function createOptionList($championArr){
   foreach($championArr as $championData){
-    $outputChampionName = str_replace("'", "\'", $championData["championName"]);
-
-    if($outputChampionName !== $targetChampionName){
+    if($championData["championId"] !== $_SESSION["targetChampionId"]){
       // <option value="Ahri">Ahri</option>
-      echo "<option value='" . $outputChampionName . "'>" . $outputChampionName . "</option>";
+      echo "<option value='" . $championData["championId"] . "'>" .
+              str_replace("\"", "&#92;", $championData["championName"]) . "</option>";
 
     }else{
       // bug <option value="Braum" selected="">Braum</option>
-      echo "<option value='" . $outputChampionName . "' selected>" . $outputChampionName . "</option>";
+      echo "<option value='" . $$championData["championId"] . "' selected>" .
+              str_replace("\"", "&#92;", $championData["championName"]) . "</option>";
 
     }
   }
 }
+
+
+/*
+select lbh.championId, lbh.buildId, lbh.elapsedTime, lbh.itemid, li.itemName from LoLBuildHistory lbh left join LoLItem li on lbh.itemId = li.itemId
+*/
