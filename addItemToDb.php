@@ -19,7 +19,7 @@ try{
 date_default_timezone_set("Asia/Tokyo");
 
 try{
-  $results = $dbh->query('SELECT * FROM LoLChampion WHERE championId ORDER BY championId');
+  $results = $dbh->query('SELECT * FROM LoLChampion ORDER BY championId');
   $championDataArr = $results->fetchAll(PDO::FETCH_ASSOC);
 
 }catch(Exception $e){
@@ -31,7 +31,7 @@ try{
 include_once('IXR_Library.php');
 require_once 'simplehtmldom/simple_html_dom.php';
 
-$stmt = $dbh->prepare("DELETE FROM LoLItem");
+$stmt = $dbh->prepare("DELETE FROM LoLItemInvestigate");
 $stmt->execute();
 
 foreach($championDataArr as $championData){
@@ -42,9 +42,11 @@ foreach($championDataArr as $championData){
   //$html = file_get_html('sample.html');
 
   $championId = $championData["championId"];
+  $buildRecordId = 1;
 
   foreach($html->find('div[class=block]') as $buildRecord){
 
+    $orderId = 1;
 
     foreach($buildRecord->find('img') as $item){
       $targetImagePath = $item->src;
@@ -61,10 +63,15 @@ foreach($championDataArr as $championData){
         $itemName = str_replace("'", "\'", $item->alt);
 
         try{
-          $stmt = $dbh->prepare("INSERT INTO LoLItem (itemId, itemName) VALUES (?, ?)");
-          $stmt->bindParam(1, $itemId);
-          $stmt->bindParam(2, $itemName);
+          $stmt = $dbh->prepare("INSERT INTO LoLItemInvestigate (championId, buildRecordId, orderId, itemId, itemName) VALUES (?, ?, ?, ?, ?)");
+          $stmt->bindParam(1, $championId);
+          $stmt->bindParam(2, $buildRecordId);
+          $stmt->bindParam(3, $orderId);
+          $stmt->bindParam(4, $itemId);
+          $stmt->bindParam(5, $itemName);
           $stmt->execute();
+
+          $orderId++;
 
         }catch(PDOException $e){
           echo $e->getMessage();
@@ -77,6 +84,8 @@ foreach($championDataArr as $championData){
 
       }
     }
+
+    $buildRecordId++;
   }
 
   echo "ChampionId: " . $championId . ", Start: " . date("H:i:s") . "<br>";
