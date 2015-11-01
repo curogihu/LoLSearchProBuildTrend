@@ -72,7 +72,6 @@ try{
       echo createBuildList($buildArr);
      ?>
 
-
     <div id="resultList">
 <!--
       <p>00-05min</p>
@@ -194,13 +193,30 @@ function createOptionList($championArr){
 
 function createBuildList($buildArr){
 
-  $outputStr = "<table>";
+  $outputStr = "<table border='1'>";
+  $outputStr .= "<tr>";
+  $outputStr .= "<th>Period</th>";
+  $outputStr .= "<th>Item Name</th>";
+  $outputStr .= "<th>Item Icon</th>";
+  $outputStr .= "<th>Frequent</th>";
+  $outputStr .= "</tr>";
+
+  $basePeriodCategory = "";
 
   foreach ($buildArr as $buildRecord) {
+
     $outputStr .= "<tr>";
-    $outputStr .="<td>" . $buildRecord["periodCategory"]. "</td>";
-    $outputStr .="<td>" . $buildRecord["displayItemName"]. "</td>";
+
+    if($basePeriodCategory === $buildRecord["periodCategory"]){
+      $outputStr .="<td></td>";
+    }else{
+      $outputStr .="<td>" . $buildRecord["periodCategory"] . "</td>";
+      $basePeriodCategory = $buildRecord["periodCategory"];
+    }
+
+    $outputStr .="<td>" . $buildRecord["displayItemName"] . "</td>";
     $outputStr .="<td>" . $buildRecord["displayItemImagePath"]. "</td>";
+    $outputStr .="<td>" . $buildRecord["frequent"]. "</td>";
     $outputStr .="</tr>";
   }
 
