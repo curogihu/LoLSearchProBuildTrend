@@ -49,8 +49,10 @@ try{
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
+  <link rel="stylesheet" type="text/css" href="default.css">
   <title>Document</title>
 </head>
+
 <body>
 
   <div id="header">
@@ -68,108 +70,15 @@ try{
       </form>
     </div>
 
-    <?php 
-      echo createBuildList($buildArr);
-     ?>
-
     <div id="resultList">
-<!--
-      <p>00-05min</p>
-      <table border="1">
-        <tr>
-          <td>Item1</td>
-          <td>Item2</td>
-          <td>Item3</td>
-          <td>Item4</td>
-          <td>Item5</td>
-        </tr>
-        <tr>
-          <td>20</td>
-          <td>12</td>
-          <td>8</td>
-          <td>5</td>
-          <td>3</td>
-        </tr>
-      </table>
-
-      <p>06-10min</p>
-      <table border="1">
-        <tr>
-          <td>Item1</td>
-          <td>Item2</td>
-          <td>Item3</td>
-          <td>Item4</td>
-          <td>Item5</td>
-        </tr>
-        <tr>
-          <td>20</td>
-          <td>12</td>
-          <td>8</td>
-          <td>5</td>
-          <td>3</td>
-        </tr>
-      </table>
-
-      <p>11-20min</p>
-      <table border="1">
-        <tr>
-          <td>Item1</td>
-          <td>Item2</td>
-          <td>Item3</td>
-          <td>Item4</td>
-          <td>Item5</td>
-        </tr>
-        <tr>
-          <td>20</td>
-          <td>12</td>
-          <td>8</td>
-          <td>5</td>
-          <td>3</td>
-        </tr>
-      </table>
-
-      <p>21-30min</p>
-      <table border="1">
-        <tr>
-          <td>Item1</td>
-          <td>Item2</td>
-          <td>Item3</td>
-          <td>Item4</td>
-          <td>Item5</td>
-        </tr>
-        <tr>
-          <td>20</td>
-          <td>12</td>
-          <td>8</td>
-          <td>5</td>
-          <td>3</td>
-        </tr>
-      </table>
-
-      <p>30-99min</p>
-      <table border="1">
-        <tr>
-          <td>Item1</td>
-          <td>Item2</td>
-          <td>Item3</td>
-          <td>Item4</td>
-          <td>Item5</td>
-        </tr>
-        <tr>
-          <td>20</td>
-          <td>12</td>
-          <td>8</td>
-          <td>5</td>
-          <td>3</td>
-        </tr>
-      </table>
+      <?php echo createBuildList($buildArr); ?>
     </div>
--->
   </div>
-
+<!--
   <div id="footer">
     <p>Test footer</p>
   </div>
+-->
 </body>
 </html>
 
@@ -193,34 +102,54 @@ function createOptionList($championArr){
 
 function createBuildList($buildArr){
 
-  $outputStr = "<table border='1'>";
-  $outputStr .= "<tr>";
-  $outputStr .= "<th>Period</th>";
-  $outputStr .= "<th>Item Name</th>";
-  $outputStr .= "<th>Item Icon</th>";
-  $outputStr .= "<th>Frequent</th>";
-  $outputStr .= "</tr>";
-
   $basePeriodCategory = "";
+  $baseCnt = "";
+  $outputStr = "";
 
-  foreach ($buildArr as $buildRecord) {
+  $tableCnt = 1;
+  $buildRank = 1;
+  $lastArrIdx = count($buildArr);
 
-    $outputStr .= "<tr>";
+  for($idx = 0; $idx < $lastArrIdx; $idx++){
+    //$outputStr .= $buildArr[$idx]["periodCategory"];
 
-    if($basePeriodCategory === $buildRecord["periodCategory"]){
-      $outputStr .="<td></td>";
-    }else{
-      $outputStr .="<td>" . $buildRecord["periodCategory"] . "</td>";
-      $basePeriodCategory = $buildRecord["periodCategory"];
+    if($basePeriodCategory !== $buildArr[$idx]["periodCategory"]){
+      $outputStr .= "<div id='build" . $tableCnt . "'>";
+      $outputStr .= "<h2>" . $buildArr[$idx]["periodCategory"] . "</h2>";
+      $outputStr .= "<table id='buildTable" . $tableCnt . "'>";
+      $outputStr .= "<tr>";
+      $outputStr .= "<th>Item Name</th>";
+      $outputStr .= "<th>Item Icon</th>";
+      $outputStr .= "<th>Frequent</th>";
+      $outputStr .= "</tr>";
+
+      $basePeriodCategory = $buildArr[$idx]["periodCategory"];
+      $baseCnt = $buildArr[$idx]["frequent"];
     }
 
-    $outputStr .="<td>" . $buildRecord["displayItemName"] . "</td>";
-    $outputStr .="<td>" . $buildRecord["displayItemImagePath"]. "</td>";
-    $outputStr .="<td>" . $buildRecord["frequent"]. "</td>";
+    if($buildArr[$idx]["frequent"] !== $baseCnt){
+      $baseCnt = $buildArr[$idx]["frequent"];
+      $buildRank++;
+    }
+
+    $outputStr .="<tr id='buildRank" . $buildRank . "'>";
+    $outputStr .="<td>" . $buildArr[$idx]["displayItemName"] . "</td>";
+    $outputStr .="<td>" . $buildArr[$idx]["displayItemImagePath"] . "</td>";
+    $outputStr .="<td>" . $buildArr[$idx]["frequent"] . "</td>";
     $outputStr .="</tr>";
+
+    if(($idx + 1 < $lastArrIdx) &&
+        ($basePeriodCategory !== $buildArr[$idx + 1]["periodCategory"]) || 
+        $idx === $lastArrIdx){
+      $outputStr .= "</table>";
+      $outputStr .= "</div>";
+
+      $tableCnt++;
+      $buildRank = 1;
+    }
   }
 
-  return $outputStr . "</table>";
+  return $outputStr;
 }
 
 function getSQLForResearchBuild($championId){
@@ -230,7 +159,7 @@ function getSQLForResearchBuild($championId){
           "accumTable.displayItemImagePath, " .
           "count(accumTable.itemId) as frequent " .
           "from (" .
-          "SELECT CASE WHEN lbh.elapsedTime <= 300000 THEN '00-05min' " .
+          "select CASE WHEN lbh.elapsedTime <= 300000 THEN '00-05min' " .
           "WHEN lbh.elapsedTime between 300001 and 600000 THEN '05-10min' " .
           "WHEN lbh.elapsedTime between 600001 and 1200000 THEN '10-20min' " .
           "WHEN lbh.elapsedTime between 1200001 and 1800000 THEN '20-30min' " .
