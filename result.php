@@ -111,41 +111,39 @@ function createBuildList($buildArr){
   $lastArrIdx = count($buildArr);
 
   for($idx = 0; $idx < $lastArrIdx; $idx++){
-    //$outputStr .= $buildArr[$idx]["periodCategory"];
 
     if($basePeriodCategory !== $buildArr[$idx]["periodCategory"]){
       $outputStr .= "<div id='build" . $tableCnt . "'>";
       $outputStr .= "<h2>" . $buildArr[$idx]["periodCategory"] . "</h2>";
       $outputStr .= "<table id='buildTable" . $tableCnt . "'>";
       $outputStr .= "<tr>";
-      $outputStr .= "<th>Item Name</th>";
-      $outputStr .= "<th>Image</th>";
-      $outputStr .= "<th>Frequent</th>";
+      $outputStr .= "<th class='itemName'>Item Name</th>";
+      $outputStr .= "<th class='itemImage'>Image</th>";
+      $outputStr .= "<th class='itemFrequency'>frequency</th>";
       $outputStr .= "</tr>";
 
       $basePeriodCategory = $buildArr[$idx]["periodCategory"];
-      $baseCnt = $buildArr[$idx]["frequent"];
+      $baseCnt = $buildArr[$idx]["frequency"];
     }
 
-    if($buildArr[$idx]["frequent"] !== $baseCnt){
-      $baseCnt = $buildArr[$idx]["frequent"];
+    if($buildArr[$idx]["frequency"] !== $baseCnt){
+      $baseCnt = $buildArr[$idx]["frequency"];
       $buildRank++;
     }
 
-    $outputStr .="<tr id='buildRank" . $buildRank . "'>";
-    $outputStr .="<td>" . convertStringForHTML($buildArr[$idx]["displayItemName"]) . "</td>";
-//    $outputStr .="<td>" . $buildArr[$idx]["displayItemImagePath"] . "</td>";
+    $outputStr .="<tr class='buildRank" . $buildRank . "'>";
+    $outputStr .="<td class='itemName'>" . convertStringForHTML($buildArr[$idx]["displayItemName"]) . "</td>";
 
     if(!empty($buildArr[$idx]["displayItemImagePath"])){
 
-      $outputStr .= "<td><img src='images/" . $buildArr[$idx]["displayItemImagePath"] .
+      $outputStr .= "<td class='itemImage'><img src='images/" . $buildArr[$idx]["displayItemImagePath"] .
                       "' alt='found' title='" . convertStringForHTML($buildArr[$idx]["displayItemName"]) . "'>";
 
     }else{
-      $outputStr .= "<td><img src='images/item_notfound.jpg' alt='notfound' title='" . $buildArr[$idx]["itemId"] . "'>";
+      $outputStr .= "<td class='itemImage'><img src='images/item_notfound.jpg' alt='notfound' title='" . $buildArr[$idx]["itemId"] . "'>";
     }
 
-    $outputStr .="<td>" . $buildArr[$idx]["frequent"] . "</td>";
+    $outputStr .="<td class='itemFrequency'>" . $buildArr[$idx]["frequency"] . "</td>";
     $outputStr .="</tr>";
 
     if(($idx + 1 < $lastArrIdx) &&
@@ -167,7 +165,7 @@ function getSQLForResearchBuild($championId){
           "accumTable.itemId, " .
           "accumTable.displayItemName, " .
           "accumTable.displayItemImagePath, " .
-          "count(accumTable.itemId) as frequent " .
+          "count(accumTable.itemId) as frequency " .
           "from (" .
           "select CASE WHEN lbh.elapsedTime <= 300000 THEN '00-05min' " .
           "WHEN lbh.elapsedTime between 300001 and 600000 THEN '05-10min' " .
@@ -186,7 +184,7 @@ function getSQLForResearchBuild($championId){
           "accumTable.displayItemName, " .
           "accumTable.displayItemImagePath " .
           "order by accumTable.periodCategory asc, " .
-          "frequent desc, " .
+          "frequency desc, " .
           "accumTable.itemId asc ";
 }
 
@@ -204,7 +202,7 @@ function convertStringForHTML($str){
 }
 
 /*
-select accumTable.periodCategory, accumTable.itemId, accumTable.displayItemName, accumTable.displayItemImagePath, count(accumTable.itemId) as frequent
+select accumTable.periodCategory, accumTable.itemId, accumTable.displayItemName, accumTable.displayItemImagePath, count(accumTable.itemId) as frequency
 from
 (
 SELECT case when lbh.elapsedTime <= 300000 then '00-05min'
@@ -220,7 +218,7 @@ FROM LoLBuildHistory lbh left join LoLItem li on lbh.itemId = li.itemId
 where championId = 21
 ) as accumTable
 group by accumTable.periodCategory, accumTable.itemId, accumTable.displayItemName, accumTable.displayItemImagePath
-order by accumTable.periodCategory, frequent desc, accumTable.itemId
+order by accumTable.periodCategory, frequency desc, accumTable.itemId
 */
 
 /*
