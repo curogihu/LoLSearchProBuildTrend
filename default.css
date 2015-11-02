@@ -1,0 +1,41 @@
+table, th, td {
+   border: 1px solid black;
+}
+
+/*
+table tr:nth-child(2) {
+  background-color: blue;
+}
+
+table tr:nth-child(3) {
+  background-color: purple;
+}
+
+table tr:nth-child(4) {
+  background-color: pink;
+}
+*/
+
+tr.buildRank1 {
+  background-color: blue;
+}
+
+tr.buildRank2 {
+  background-color: purple;
+}
+
+tr.buildRank3 {
+  background-color: pink;
+}
+
+th.itemName, td.itemName {
+  width: 265px;
+}
+
+th.itemImage, td.itemImage {
+  width: 45px;
+}
+
+th.itemFrequency, td.itemFrequency {
+  width: 60px;
+}
