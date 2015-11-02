@@ -35,7 +35,7 @@ $stmt = $dbh->prepare("DELETE FROM LoLChampion");
 $stmt->execute();
 
 $target = $html->find('ul[class=search-results-results champion-results]')[0];
-$championId = 0;
+$championId = 1;
 
 foreach($target->find('li[class=left tooltip]') as $championRecord){
   $championName = $championRecord->find('h3')[0]->plaintext;
