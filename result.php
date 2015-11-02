@@ -35,10 +35,6 @@ try{
     $buildArr = $buildResults->fetchAll(PDO::FETCH_ASSOC);
   }
 
-
-//getSQLForResearchBuild($_SESSION["targetChampionId"])
-  //echo "string = " . getSQLForResearchBuild($_SESSION["targetChampionId"]);
-
 }catch(Exception $e){
   echo $e->getMessage();
   die();
@@ -85,19 +81,23 @@ try{
 <?php
 
 function createOptionList($championArr){
+  $outputStr = "";
+
   foreach($championArr as $championData){
     if($championData["championId"] !== $_SESSION["targetChampionId"]){
       // <option value="Ahri">Ahri</option>
-      echo "<option value='" . $championData["championId"] . "'>" .
-              str_replace("\"", "&#92;", $championData["championName"]) . "</option>";
+      $outputStr .= "<option value='" . $championData["championId"] . "'>";
 
     }else{
       // bug <option value="Braum" selected="">Braum</option>
-      echo "<option value='" . $$championData["championId"] . "' selected>" .
-              str_replace("\"", "&#92;", $championData["championName"]) . "</option>";
-
+      $outputStr .= "<option value='" . $$championData["championId"] . "' selected>";
     }
+
+    $outputStr .= "[" . sprintf("%03d", $championData["championId"]) . "]" .
+                    convertStringForHTML($championData["championName"]) . "</option>";
   }
+
+  return $outputStr;
 }
 
 function createBuildList($buildArr){
@@ -119,7 +119,7 @@ function createBuildList($buildArr){
       $outputStr .= "<table id='buildTable" . $tableCnt . "'>";
       $outputStr .= "<tr>";
       $outputStr .= "<th>Item Name</th>";
-      $outputStr .= "<th>Item Icon</th>";
+      $outputStr .= "<th>Image</th>";
       $outputStr .= "<th>Frequent</th>";
       $outputStr .= "</tr>";
 
@@ -133,8 +133,18 @@ function createBuildList($buildArr){
     }
 
     $outputStr .="<tr id='buildRank" . $buildRank . "'>";
-    $outputStr .="<td>" . $buildArr[$idx]["displayItemName"] . "</td>";
-    $outputStr .="<td>" . $buildArr[$idx]["displayItemImagePath"] . "</td>";
+    $outputStr .="<td>" . convertStringForHTML($buildArr[$idx]["displayItemName"]) . "</td>";
+//    $outputStr .="<td>" . $buildArr[$idx]["displayItemImagePath"] . "</td>";
+
+    if(!empty($buildArr[$idx]["displayItemImagePath"])){
+
+      $outputStr .= "<td><img src='images/" . $buildArr[$idx]["displayItemImagePath"] .
+                      "' alt='found' title='" . convertStringForHTML($buildArr[$idx]["displayItemName"]) . "'>";
+
+    }else{
+      $outputStr .= "<td><img src='images/item_notfound.jpg' alt='notfound' title='" . $buildArr[$idx]["itemId"] . "'>";
+    }
+
     $outputStr .="<td>" . $buildArr[$idx]["frequent"] . "</td>";
     $outputStr .="</tr>";
 
@@ -180,6 +190,19 @@ function getSQLForResearchBuild($championId){
           "accumTable.itemId asc ";
 }
 
+
+// this method was created for improving my knowledge.
+function convertStringForHTML($str){
+  // if forgetting correcting champion name from [/'] to ['].
+  //$str = str_replace("\"", "&#92;", $str);
+
+  // the following cords aren't necessary even if the data include special characters.
+  //$str = str_replace("'", "&#39;", $str);
+  //$str = str_replace("&", "&#38;", $str);
+
+  return $str;
+}
+
 /*
 select accumTable.periodCategory, accumTable.itemId, accumTable.displayItemName, accumTable.displayItemImagePath, count(accumTable.itemId) as frequent
 from
@@ -199,8 +222,6 @@ where championId = 21
 group by accumTable.periodCategory, accumTable.itemId, accumTable.displayItemName, accumTable.displayItemImagePath
 order by accumTable.periodCategory, frequent desc, accumTable.itemId
 */
-
-
 
 /*
 select lbh.championId, lbh.buildId, lbh.elapsedTime, lbh.itemid, li.itemName, ifnull(li.itemImagePath,"") as displayItemImagePath from LoLBuildHistory lbh left join LoLItem li on lbh.itemId = li.itemId
