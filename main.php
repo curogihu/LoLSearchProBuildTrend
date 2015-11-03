@@ -36,6 +36,7 @@ try{
 
   <div id="header">
     <p>Test header</p>
+    <h1>LoL Build Trend</h1>
   </div>
 
   <div id="container">

@@ -51,24 +51,35 @@ try{
 
 <body>
 
-  <div id="header">
-    <p>Test header</p>
+  <div id="adLeft">
+    <p>left side</p>
   </div>
 
-  <div id="container">
-    <div id="searchForm">
-      <form action="result.php" method="post">
-        <select name="targetChampionId" id="targetChampionId">
-        <?php echo createOptionList($championDataArr, $_SESSION["targetChampionId"]); ?>
-        </select>
-
-        <input type="submit" value="search">
-      </form>
+  <div id="contents">
+    <div id="header">
+      <p>Test header</p>
+      <h1>LoL Build Trend</h1>
     </div>
 
-    <div id="resultList">
-      <?php echo createBuildList($buildArr); ?>
+    <div id="container">
+      <div id="searchForm">
+        <form action="result.php" method="post">
+          <select name="targetChampionId" id="targetChampionId">
+          <?php echo createOptionList($championDataArr, $_SESSION["targetChampionId"]); ?>
+          </select>
+
+          <input type="submit" value="search">
+        </form>
+      </div>
+
+      <div id="resultList">
+        <?php echo createBuildList($buildArr); ?>
+      </div>
     </div>
+  </div>
+
+  <div id="adRight">
+    <p>right side</p>
   </div>
 <!--
   <div id="footer">
@@ -137,10 +148,10 @@ function createBuildList($buildArr){
     if(!empty($buildArr[$idx]["displayItemImagePath"])){
 
       $outputStr .= "<td class='itemImage'><img src='images/" . $buildArr[$idx]["displayItemImagePath"] .
-                      "' alt='found' title='" . convertStringForHTML($buildArr[$idx]["displayItemName"]) . "'>";
+                      "' alt='found' title='" . convertStringForHTML($buildArr[$idx]["displayItemName"]) . "'></td>";
 
     }else{
-      $outputStr .= "<td class='itemImage'><img src='images/item_notfound.jpg' alt='notfound' title='" . $buildArr[$idx]["itemId"] . "'>";
+      $outputStr .= "<td class='itemImage'><img src='images/item_notfound.jpg' alt='notfound' title='" . $buildArr[$idx]["itemId"] . "'></td>";
     }
 
     $outputStr .="<td class='itemFrequency'>" . $buildArr[$idx]["frequency"] . "</td>";
