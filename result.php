@@ -119,9 +119,9 @@ function createBuildList($buildArr){
 
   $tableCnt = 1;
   $buildRank = 1;
-  $lastArrIdx = count($buildArr);
+  $lastArrIdx = count($buildArr) - 1;
 
-  for($idx = 0; $idx < $lastArrIdx; $idx++){
+  for($idx = 0; $idx <= $lastArrIdx; $idx++){
 
     if($basePeriodCategory !== $buildArr[$idx]["periodCategory"]){
       $outputStr .= "<div id='build" . $tableCnt . "'>";
@@ -143,12 +143,17 @@ function createBuildList($buildArr){
     }
 
     $outputStr .="<tr class='buildRank" . $buildRank . "'>";
-    $outputStr .="<td class='itemName'>" . convertStringForHTML($buildArr[$idx]["displayItemName"]) . "</td>";
+
+    // modify
+    $outputStr .='<td class="itemName">' . convertStringForHTML($buildArr[$idx]["displayItemName"]) . '</td>';
 
     if(!empty($buildArr[$idx]["displayItemImagePath"])){
-
-      $outputStr .= "<td class='itemImage'><img src='images/" . $buildArr[$idx]["displayItemImagePath"] .
-                      "' alt='found' title='" . convertStringForHTML($buildArr[$idx]["displayItemName"]) . "'></td>";
+/*
+      $outputStr .= '<td class="itemImage"><img src="images/' . $buildArr[$idx]["displayItemImagePath"] .
+                      '" alt="found" title="' . convertStringForHTML($buildArr[$idx]["displayItemName"]) . '"></td>';
+*/
+      $outputStr .= '<td class="itemImage"><img src="images/' . $buildArr[$idx]["displayItemImagePath"] .
+                      '" alt="found" title="test"></td>';
 
     }else{
       $outputStr .= "<td class='itemImage'><img src='images/item_notfound.jpg' alt='notfound' title='" . $buildArr[$idx]["itemId"] . "'></td>";
@@ -156,6 +161,9 @@ function createBuildList($buildArr){
 
     $outputStr .="<td class='itemFrequency'>" . $buildArr[$idx]["frequency"] . "</td>";
     $outputStr .="</tr>";
+
+    //echo "idx = " . $idx . "<br>";
+    //echo "lastArrIdx = " . $lastArrIdx . "<br>";
 
     if(($idx + 1 < $lastArrIdx) &&
         ($basePeriodCategory !== $buildArr[$idx + 1]["periodCategory"]) || 
@@ -167,6 +175,7 @@ function createBuildList($buildArr){
       $buildRank = 1;
     }
   }
+
 
   return $outputStr;
 }
