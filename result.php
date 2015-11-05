@@ -51,14 +51,14 @@ try{
 
 <body>
 
-  <div id="adLeft">
-    <p>left side</p>
+  <div id="header">
+    <p>Test header</p>
+    <h1>LoL Build Trend</h1>
   </div>
 
   <div id="contents">
-    <div id="header">
-      <p>Test header</p>
-      <h1>LoL Build Trend</h1>
+    <div id="adLeft">
+      <p>left side</p>
     </div>
 
     <div id="container">
@@ -76,16 +76,12 @@ try{
         <?php echo createBuildList($buildArr); ?>
       </div>
     </div>
+
+    <div id="adRight">
+      <p>right side</p>
+    </div>
   </div>
 
-  <div id="adRight">
-    <p>right side</p>
-  </div>
-<!--
-  <div id="footer">
-    <p>Test footer</p>
-  </div>
--->
 </body>
 </html>
 
